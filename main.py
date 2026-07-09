@@ -46,6 +46,11 @@ async def first_api():
 async def read_all_books():
     return BOOKS
 
+
+@app.get('/books/mybook')
+async def read_my_books():
+    return {'book_title': 'my favorite book!'}
+
 @app.get('/books/{book_title}')
 async def read_book(book_title: str):
     for book in BOOKS:
@@ -57,5 +62,14 @@ async def read_all_books(dynamic_param):
     return {'dynamic_param': dynamic_param}
 
 
+@app.get('/books/{book_author}')
+async def read_category_by_query(book_author: str,category: str):
+    print(category)
+    print(book_author)
+    books_to_return = []
+    for book in BOOKS:
+        if book.get('author').casefold() == book_author.casefold() and book.get('catetory').casefold() == category.casefold():
+            books_to_return.append(book)
+    return books_to_return
 
 
