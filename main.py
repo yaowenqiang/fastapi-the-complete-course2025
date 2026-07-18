@@ -91,3 +91,11 @@ async def delete_book(book_title: str):
             print(i)
             BOOKS[i].pop(i)
             break
+
+@app.get('/books/byauthor/{author}')
+async def read_books_by_author_path(author: str):
+    boosk_to_return = []
+    for i in range(len(BOOKS)):
+        if BOOKS[i].get('author').casefold() == author.casefold():
+            boosk_to_return.append(BOOKS[i])
+    return boosk_to_return
