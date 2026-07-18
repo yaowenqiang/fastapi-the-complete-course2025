@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Body
 
 app = FastAPI()
@@ -79,7 +80,7 @@ async def create_book(new_book=Body()):
 @app.put('/books/update_book')
 async def update_book(updated_book=Body()):
     for i in range(len(BOOKS)):
-        title = update_book.get('title','').casefold()
+        title = updated_book.get('title','').casefold()
         if BOOKS[i].get('title').casefold() == title:
             BOOKS[i] = updated_book
             break
@@ -99,3 +100,6 @@ async def read_books_by_author_path(author: str):
         if BOOKS[i].get('author').casefold() == author.casefold():
             boosk_to_return.append(BOOKS[i])
     return boosk_to_return
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
