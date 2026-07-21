@@ -1,9 +1,10 @@
-from email.quoprimime import body_check
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import uvicorn
-from fastapi import FastAPI, Body
+from fastapi import FastAPI
 from pygments.lexers import func
+
+from main import BOOKS
 
 app = FastAPI()
 
@@ -23,11 +24,17 @@ class Book:
 
 class BookRequest(BaseModel):
     id: int
-    title: str
-    author: str
-    description: str
-    rating: int
+    title: str = Field(min_length=3)
+    author: str = Field(min_length=1)
+    description: str = Field(min_length=1, max_length=100)
+    rating: int = Field(gt=-1, lt=5)
 
+def find_book_id(book: Book):
+    if len(book) > 0:
+        book.id = BOOKS[-1].id + 1
+    else:
+        book.id = 1
+    return book
 
 BOOKS = [
     Book(1,'computer science pro', 'codingwithruby', 'a very nice book', 5),
@@ -52,7 +59,7 @@ async def read_all_books():
 async def create_book(book_request=BookRequest):
     new_book = Book(**book_request.dict())
     # new_book = Book(**book_request.model_dump())
-    BOOKS.append(new_book)
+    BOOKS.append(find_book_id(new_book))
 
 
 if __name__ == "__main__":
