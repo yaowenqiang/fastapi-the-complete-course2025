@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 import uvicorn
@@ -23,17 +25,19 @@ class Book:
         self.rating = rating
 
 class BookRequest(BaseModel):
-    id: int
+    id: Optional[int] = None
     title: str = Field(min_length=3)
     author: str = Field(min_length=1)
     description: str = Field(min_length=1, max_length=100)
     rating: int = Field(gt=-1, lt=5)
 
 def find_book_id(book: Book):
-    if len(book) > 0:
-        book.id = BOOKS[-1].id + 1
-    else:
-        book.id = 1
+    # if len(BOOKS) > 0:
+    #     book.id = BOOKS[-1].id + 1
+    # else:
+    #     book.id = 1
+    # return book
+    book.id = 1 if len(BOOKS) == 0 else BOOKS[-1].id + 1
     return book
 
 BOOKS = [
@@ -56,9 +60,10 @@ async def read_all_books():
 #     BOOKS.append(book_request)
 
 @app.post('/create-book')
-async def create_book(book_request=BookRequest):
-    new_book = Book(**book_request.dict())
+async def create_book(book_request:BookRequest):
+    print(book_request.model_dump())
     # new_book = Book(**book_request.model_dump())
+    new_book = Book(**book_request.model_dump())
     BOOKS.append(find_book_id(new_book))
 
 
