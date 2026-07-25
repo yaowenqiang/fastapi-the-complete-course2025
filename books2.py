@@ -70,12 +70,35 @@ async def read_book(book_id: int):
 # async def create_book(book_request=Body()):
 #     BOOKS.append(book_request)
 
+@app.get('/books/')
+async def read_book_by_rating(book_rating: int):
+    books_to_return = []
+    for book in BOOKS:
+        if book.rating == book_rating:
+            books_to_return.append(book)
+
+    return books_to_return
+
 @app.post('/create-book')
 async def create_book(book_request:BookRequest):
     print(book_request.model_dump())
     # new_book = Book(**book_request.model_dump())
     new_book = Book(**book_request.model_dump())
     BOOKS.append(find_book_id(new_book))
+
+@app.put('/books/update-book')
+async def update_book(book:BookRequest):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book.id:
+            BOOKS[i] = book
+            break
+
+@app.delete('/books/{book_id}')
+async def delete_book(book_id:int):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book_id:
+            BOOKS.pop(i)
+            break
 
 
 if __name__ == "__main__":
