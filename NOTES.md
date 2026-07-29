@@ -5,3 +5,5 @@
 > xh localhost:8000/books/book_one 
 
 > %20 = space in a URL
+
+> pip install sqlalchemy
