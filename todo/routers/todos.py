@@ -1,7 +1,6 @@
 
 from typing import Annotated
 
-import uvicorn
 from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session

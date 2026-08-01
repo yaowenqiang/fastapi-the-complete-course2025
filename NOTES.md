@@ -17,3 +17,7 @@
 > sqlite> .mode table
 
 > sqlite3 will reuse the primary key if record is deleted
+  
+> pip install passlib
+> 
+> pip install bcrypt==4.0.1
