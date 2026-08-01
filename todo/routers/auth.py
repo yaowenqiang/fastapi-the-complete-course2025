@@ -1,3 +1,6 @@
+from datetime import timedelta, datetime, timezone
+
+from dns.dnssecalgs import algorithms
 from fastapi import APIRouter,Depends
 from pydantic import BaseModel
 from starlette import status
@@ -8,6 +11,10 @@ import hashlib
 from typing import Annotated
 from sqlalchemy.orm import Session
 from database import SessionLocal
+
+from fastapi.security import OAuth2PasswordRequestForm
+
+from jose import jwt
 
 def hash_password(password: str) -> str:
     """Hash password with SHA-256 first to handle >72 byte passwords, then bcrypt"""
@@ -25,6 +32,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 router = APIRouter()
 
+
+
+# openssl rand -hex 32
+
+SECRET_KEY = '1fb7c15bd4d63adebdc75c9927a93b3821633ebd7c23c1bd8afd9d3a24ac0145'
+
+ALGORITHM = 'HS256'
+
+
+
 class CreateUserRequest(BaseModel):
 
     email: str
@@ -34,6 +51,10 @@ class CreateUserRequest(BaseModel):
     password:str
     role: str
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 def get_db():
     db = SessionLocal()
     try:
@@ -42,6 +63,26 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+def authenticate_user(username: str, password: str, db: db_dependency):
+    user = db.query(Users).filter(Users.username == username).first()
+    if not user:
+        return False
+
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(username: str, user_id: int, expire_delta:timedelta):
+    encode = {
+        'sub': username,
+        'id':user_id
+    }
+    expire = datetime.now(timezone.utc) + expire_delta
+    encode.update({'exp':expire})
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 @router.post('/auth/', status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, create_user_request: CreateUserRequest):
@@ -57,6 +98,17 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     db.add(create_user_model)
     db.commit()
 
-@router.get('/auth/')
-async def get_user():
-    return {'user': 'authenticated'}
+@router.post('/token/', response_model=Token)
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        return "Failed authentication"
+    token = create_access_token(username=user.username, user_id=user.id, expire_delta=timedelta(minutes=24))
+
+    return {
+        'access_token': token,
+        'token_type': 'bearer'
+    }
+
+
+
