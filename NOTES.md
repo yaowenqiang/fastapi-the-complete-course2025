@@ -69,3 +69,6 @@ The secret can be anything, but is save somewhere on the server that the client 
 > uv pip install python-jose
 
 > uv pip install psycopg2-binary
+
+> uv pip install pymysql
+
