@@ -72,3 +72,13 @@ The secret can be anything, but is save somewhere on the server that the client 
 
 > uv pip install pymysql
 
+> uv pip install alembic
+
+
+alembic init <filder name> Initializes a new, generic environment
+
+> alembic init alembic 
+
+alembic revision -m <message> Create a new revision of the environment
+alembic upgrade <revision #> Run our upgrade migration to our database
+alembic downgrade-1 Run our downgrade migration to our database

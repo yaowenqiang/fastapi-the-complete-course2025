@@ -47,13 +47,13 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
 
 class CreateUserRequest(BaseModel):
-
     email: str
     username : str
     first_name: str
     last_name: str
     password:str
     role: str
+    phone_number: str
 
 class Token(BaseModel):
     access_token: str
@@ -114,7 +114,8 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         last_name=create_user_request.last_name,
         role = create_user_request.role,
         hashed_password = hash_password(create_user_request.password),
-        is_active = True
+        is_active = True,
+        phone_number = create_user_request.phone_number
     )
     db.add(create_user_model)
     db.commit()
