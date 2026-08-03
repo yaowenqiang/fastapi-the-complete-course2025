@@ -82,3 +82,8 @@ alembic init <filder name> Initializes a new, generic environment
 alembic revision -m <message> Create a new revision of the environment
 alembic upgrade <revision #> Run our upgrade migration to our database
 alembic downgrade-1 Run our downgrade migration to our database
+
+Test
+
+> uv pip install pytest
+
