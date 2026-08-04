@@ -4,12 +4,12 @@ from fastapi import APIRouter,Depends, HTTPException
 from pydantic import BaseModel
 from starlette import status
 
-from models import Users
+from ..models import Users
 import bcrypt
 import hashlib
 from typing import Annotated
 from sqlalchemy.orm import Session
-from database import SessionLocal
+from ..database import SessionLocal
 
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 

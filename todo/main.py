@@ -1,20 +1,17 @@
-from typing import Annotated
-
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, Path
-from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
-from starlette import status
+from .models import Base
 
-import models
-from models import Todos
-
-from database import engine, SessionLocal
-from routers import auth, todos, admin,user
+from .database import engine
+from .routers import auth, todos, admin,user
 
 app = FastAPI()
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
+@app.get('/healthy')
+def health_check():
+    return {'status':'healthy'}
 
 app.include_router(auth.router)
 app.include_router(todos.router)

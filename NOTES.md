@@ -87,3 +87,6 @@ Test
 
 > uv pip install pytest
 
+> uv run uvicorn todo.main:app
+
+> uv run pytest --disable-warnings

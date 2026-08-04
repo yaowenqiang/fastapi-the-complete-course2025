@@ -1,8 +1,5 @@
-from enum import unique
 
-from pygments.lexer import default
-
-from database import Base
+from .database import Base
 from sqlalchemy import Column, Integer, String,Text, Boolean, ForeignKey
 
 
