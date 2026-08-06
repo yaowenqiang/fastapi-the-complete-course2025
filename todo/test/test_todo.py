@@ -15,7 +15,7 @@ from ..models import Todos, Users
 
 SQLALCHEMY_DATABASE_URL = 'mysql+pymysql://root:123456@127.0.0.1:3306/TestTodoapplicationdatabase'
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True,poolclass=StaticPool)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False,poolclass=StaticPool)
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -88,4 +88,17 @@ def test_read_all_authenticated(test_todo):
         'id': todo.id,
         'owner_id' : 1
     }]
+
+def test_read_one_authenticated(test_todo):
+    _, todo = test_todo
+    response = client.get(f'/todo/{todo.id}')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        'complete' : False,
+        'description' :'learn to code',
+        'priority' : 5,
+        'title' : 'learn to code',
+        'id': todo.id,
+        'owner_id' : 1
+    }
 
