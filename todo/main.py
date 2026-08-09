@@ -1,13 +1,24 @@
 import uvicorn
-from fastapi import FastAPI, Depends, HTTPException, Path
+from fastapi import FastAPI, Depends, HTTPException, Path ,Request
+
 from .models import Base
 
 from .database import engine
 from .routers import auth, todos, admin,user
 
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory='todo/templates')
+
+
+
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+@app.get('/')
+def test(request: Request):
+   return  templates.TemplateResponse(request, 'home.html' )
 
 @app.get('/healthy')
 def health_check():

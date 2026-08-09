@@ -92,3 +92,10 @@ Test
 > uv run pytest --disable-warnings
 
 > uv pip install pytest-asyncio
+> uv pip install aiofiles
+> uv pip install jinjia2
+
+
+> pwd = /Users/yaojack/Code/python_project/fastapi-the-complete-course2025
+
+> uv run uvicorn todo.main:app
