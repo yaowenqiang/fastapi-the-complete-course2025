@@ -90,3 +90,5 @@ Test
 > uv run uvicorn todo.main:app
 
 > uv run pytest --disable-warnings
+
+> uv pip install pytest-asyncio
