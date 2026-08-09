@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from ..main import app
 import pytest
 from ..models import Todos, Users
+from ..routers.auth import hash_password
 
 SQLALCHEMY_DATABASE_URL = 'mysql+pymysql://root:123456@127.0.0.1:3306/TestTodoapplicationdatabase'
 
@@ -37,6 +38,14 @@ client = TestClient(app)
 
 @pytest.fixture
 def test_todo():
+    db = TestingSessionLocal()
+
+    # 清理可能存在的数据
+    with engine.connect() as conn:
+        conn.execute(text('DELETE FROM TODOS'))
+        conn.execute(text('DELETE FROM USERS WHERE id=1'))
+        conn.commit()
+
     # 创建用户
     user = Users(
         id=1,
@@ -56,7 +65,7 @@ def test_todo():
         complete = False,
         owner_id = 1
     )
-    db = TestingSessionLocal()
+
     db.add(user)
     db.commit()
     db.add(todo)
@@ -69,3 +78,33 @@ def test_todo():
         conn.execute(text('DELETE FROM USERS'))
         conn.commit()
 
+
+@pytest.fixture
+def test_user():
+    db = TestingSessionLocal()
+
+    # 清理可能存在的用户
+    with engine.connect() as conn:
+        conn.execute(text('DELETE FROM USERS WHERE id=1'))
+        conn.commit()
+
+    user = Users(
+        id=1,
+        username='jacky.yao',
+        email='myemail@mydomain.com',
+        first_name = 'jacky',
+        last_name = 'yao',
+        hashed_password = hash_password('123456'),
+        role = 'admin',
+        phone_number = '1111',
+        is_active=True
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    yield user
+
+    with engine.connect() as conn:
+        conn.execute(text('DELETE FROM USERS WHERE id=1'))

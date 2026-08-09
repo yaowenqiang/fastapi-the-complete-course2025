@@ -47,7 +47,7 @@ async def change_password(user:user_dependency,db:db_dependency,user_verificatio
     user_model = db.query(Users).filter(Users.id == user.get('id')).first()
 
     if not verify_password(user_verification.password, user_model.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail='Authentication Failed')
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail='Error on password change')
 
     user_model.hashed_password = hash_password(user_verification.new_password)
     db.add(user_model)
