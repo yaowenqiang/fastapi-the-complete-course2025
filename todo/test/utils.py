@@ -30,7 +30,7 @@ def override_get_current_user():
     return {
         'username': 'string',
         'id': 1,
-        'user_role': 'admin',
+        'role': 'admin',
     }
 
 client = TestClient(app)

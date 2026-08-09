@@ -1,0 +1,150 @@
+# JWT 验证流程对比图
+
+## 生产环境完整流程
+```
+HTTP Request
+    |
+    v
+Authorization Header
+"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    |
+    v
+OAuth2PasswordBearer Dependency
+    |
+    +-- Extract Authorization header
+    +-- Validate "Bearer <token>" format  
+    +-- Extract token string
+    |
+    v
+get_current_user(token)
+    |
+    v
+JWT Verification
+    |
+    +-- jwt.decode(token, SECRET_KEY)
+    +-- Verify signature (prevent tampering)
+    +-- Check expiration time (exp field)
+    +-- Decode payload
+    |
+    v
+Extract User Info
+    |
+    +-- username: str = payload.get('sub')
+    +-- user_id: int = payload.get('id')
+    +-- user_role: str = payload.get('role')
+    |
+    v
+Return User Dict
+{
+  'username': 'real_user',
+  'id': 123,
+  'role': 'admin'
+}
+    |
+    v
+Admin Router Permission Check
+user.get('role') == 'admin'  ✓
+    |
+    v
+Access Granted (HTTP 200)
+```
+
+## 测试环境跳过流程
+```
+HTTP Request
+    |
+    v
+Authorization Header
+(None or invalid)
+    |
+    v
+Dependency Override System
+    |
+    +-- Check dependency_overrides dict
+    +-- Found: get_current_user -> override_get_current_user
+    |
+    v
+override_get_current_user()
+    |
+    +-- No token parameter needed
+    +-- No OAuth2Bearer involved
+    +-- No JWT decoding
+    +-- No signature verification
+    +-- No expiration check
+    |
+    v
+Direct Return Mock User
+{
+  'username': 'string',
+  'id': 1,
+  'role': 'admin'
+}
+    |
+    v
+Admin Router Permission Check  
+user.get('role') == 'admin'  ✓
+    |
+    v
+Access Granted (HTTP 200)
+```
+
+## 关键差异对比
+
+| 步骤 | 生产环境 | 测试环境 | 状态 |
+|------|----------|----------|------|
+| Token Extract | OAuth2Bearer | **Skipped** | ⚡ |
+| JWT Decode | jwt.decode() | **Skipped** | ⚡ |
+| Signature Verify | SECRET_KEY check | **Skipped** | ⚡ |
+| Exp Check | exp field validation | **Skipped** | ⚡ |
+| User Extract | payload.get() | **Skipped** | ⚡ |
+| Return User | Real user data | Mock user data | ✅ Modified |
+| Role Check | role == 'admin' | role == 'admin' | ✅ Same |
+
+## 代码层面的跳过机制
+
+### FastAPI 内部逻辑（简化）
+```python
+class FastAPI:
+    dependency_overrides = {}
+    
+    def call_dependency(self, original_func):
+        # 检查是否有覆盖
+        if original_func in self.dependency_overrides:
+            # 🔥 跳过原始函数，调用覆盖函数
+            override_func = self.dependency_overrides[original_func]
+            return override_func()  # 直接返回模拟数据
+        else:
+            # 调用原始函数，执行完整 JWT 验证
+            return original_func()  # 执行 JWT 解析和验证
+```
+
+### 在 test_admin.py 中的应用
+```python
+# 设置覆盖
+app.dependency_overrides[get_current_user] = override_get_current_user
+
+# 当 admin 路由需要用户认证时：
+# 1. FastAPI 检查到 get_current_user 有覆盖
+# 2. 跳过原始的 get_current_user(token) 函数
+# 3. 调用 override_get_current_user() - 不需要 token
+# 4. 直接返回 {'username': 'string', 'id': 1, 'role': 'admin'}
+# 5. 完全跳过 JWT 解析、签名验证、过期检查
+```
+
+## 总结
+
+**JWT 验证被跳过的核心原因：**
+1. FastAPI 依赖覆盖系统替换了函数调用
+2. 覆盖函数不需要 token 参数，跳过 OAuth2Bearer
+3. 覆盖函数直接返回模拟数据，跳过 JWT 解析
+4. 签名验证和过期检查都包含在 JWT 解析中，因此被跳过
+
+**跳过的验证步骤：**
+⚡ Token 提取和格式验证
+⚡ JWT 签名验证  
+⚡ 过期时间检查
+⚡ 用户存在性验证
+
+**保留的业务逻辑：**
+✅ Admin 权限检查 (role == 'admin')
+✅ 数据库操作和业务逻辑
