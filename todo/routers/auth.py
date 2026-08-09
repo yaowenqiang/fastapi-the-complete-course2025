@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime, timezone
+from re import template
 
-from fastapi import APIRouter,Depends, HTTPException
+from fastapi import APIRouter,Depends, HTTPException, Request
 from pydantic import BaseModel
 from starlette import status
 
@@ -14,6 +15,10 @@ from ..database import SessionLocal
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 from jose import jwt, JWTError
+
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory='todo/templates')
 
 
 def hash_password(password: str) -> str:
@@ -34,6 +39,13 @@ router = APIRouter(
     prefix='/auth',
     tags=['auth']
 )
+
+### Pages ###
+@router.get('/login-page')
+def render_login_page(request: Request):
+    return  templates.TemplateResponse(request, 'login.html' )
+
+### Endpoints ###
 
 
 

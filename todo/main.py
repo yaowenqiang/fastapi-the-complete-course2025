@@ -7,12 +7,17 @@ from .database import engine
 from .routers import auth, todos, admin,user
 
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
 
 templates = Jinja2Templates(directory='todo/templates')
 
 
 
+
 app = FastAPI()
+
+app.mount('/static', StaticFiles(directory='todo/static'), name='static')
 
 Base.metadata.create_all(bind=engine)
 
