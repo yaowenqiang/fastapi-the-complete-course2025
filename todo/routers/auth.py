@@ -45,6 +45,10 @@ router = APIRouter(
 def render_login_page(request: Request):
     return  templates.TemplateResponse(request, 'login.html' )
 
+@router.get('/register')
+def render_register_page(request: Request):
+    return  templates.TemplateResponse(request, 'register.html' )
+
 ### Endpoints ###
 
 
