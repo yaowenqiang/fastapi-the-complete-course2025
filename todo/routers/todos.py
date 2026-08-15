@@ -10,7 +10,7 @@ from ..database import SessionLocal
 from starlette.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-templates = Jinja2Templates(directory='/todo/templates')
+templates = Jinja2Templates(directory='todo/templates')
 
 from .auth import get_current_user
 
@@ -38,23 +38,30 @@ class TodoRequest(BaseModel):
     complete: bool
 
 def redirect_to_login():
-    redirect_response = RedirectResponse(url='/auth/login0page', status_code=status.HTTP_302_FOUND)
-    redirect_response.delete_cookie(key='access_token')
-    return redirect_response
+    return RedirectResponse(url='/auth/login-page', status_code=status.HTTP_302_FOUND)
 
 ### Pages ###
 
 @router.get('/todo-page', status_code=status.HTTP_200_OK)
 async def render_todo_page(request: Request, db: db_dependency):
     try:
-        user = await get_current_user(request.cookies.get('access_token'))
+        # Debug: Print all cookies
+        print("All cookies:", dict(request.cookies))
+        token = request.cookies.get('access_token')
+        print("Access token from cookie:", token)
+
+        user = await get_current_user(token)
+        print("User from get_current_user:", user)
+
         if user is None:
+            print("User is None, redirecting to login")
             return redirect_to_login()
 
         todos = db.query(Todos).filter(Todos.owner_id == user.get('id'))
 
-        return templates.TemplateResponse(request, 'todo.html',{'todos': todos, 'user': user})
-    except:
+        return templates.TemplateResponse(request, 'todos.html',{'todos': todos, 'user': user})
+    except Exception as e:
+        print("Exception in render_todo_page:", e)
         return redirect_to_login()
 ### Endpoints ###
 @router.get('/', status_code=status.HTTP_200_OK)
