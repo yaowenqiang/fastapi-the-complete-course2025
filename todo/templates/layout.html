@@ -9,6 +9,8 @@
 <body>
 {% block content %}
 
+{% include "navbar.html" %}
+
 {% endblock %}
 
 <script src="{{ url_for('static', path='js/jquery-slim.js') }}"></script>

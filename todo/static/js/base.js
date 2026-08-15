@@ -149,7 +149,7 @@
                     const data = await response.json();
                     console.log('Login successful, token:', data.access_token);
                     // Delete any cookies available
-                    logout();
+                    logout(redirect=false); // Call logout to clear cookies without redirecting
                     // Save token to cookie
                     const cookieValue = `access_token=${data.access_token}; path=/; SameSite=Lax`;
                     console.log('Setting cookie:', cookieValue);
@@ -236,7 +236,7 @@
         return cookieValue;
     };
 
-    function logout() {
+    function logout(redirect=false) {
         // Get all cookies
         const cookies = document.cookie.split(";");
 
@@ -250,5 +250,7 @@
         }
 
         // Redirect to the login page
-        // window.location.href = '/auth/login-page';
+        if (redirect) {
+            window.location.href = '/auth/login-page';
+        }
     };
