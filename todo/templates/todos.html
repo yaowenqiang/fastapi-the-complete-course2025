@@ -22,7 +22,7 @@
           </thead>
         <tbody>
         {% for todo in todos%}
-          {% if todos.complete == False %}
+          {% if todo.complete == 0 %}
             <tr class="pointer">
               <td>{{loop.index}}</td>
               <td>{{todo.title}}</td>
@@ -32,7 +32,7 @@
                 >Edit</button>
               </td>
             </tr>
-        {% else %}
+          {% else %}
         <tr class="pointer alert alert-success">
           <td>{{loop.index}}</td>
           <td class="strike-through-td">{{todo.title}}</td>

@@ -88,6 +88,19 @@ async def render_add_todo_page(request: Request):
         print("Exception in render_add_todo_page:", e)
         return redirect_to_login()
 
+@router.get('/edit-todo-page/{todo_id}', status_code=status.HTTP_200_OK)
+async def render_edit_todo_page(request: Request, db: db_dependency, todo_id: int = Path(gt=0)):
+    try:
+        user = await get_current_user(request.cookies.get('access_token'))
+        if user is None:
+            return redirect_to_login()
+        todo = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.owner_id == user.get('id')).first()
+        if todo is None:
+            return redirect_to_login()
+        return templates.TemplateResponse(request, 'edit-todo.html', {'todo': todo, 'user': user})  
+    except Exception as e:
+        print("Exception in render_update_todo_page:", e)
+        return redirect_to_login()
 ### Endpoints ###
 @router.get('/', status_code=status.HTTP_200_OK)
 async def read_all(user: user_dependency,db: db_dependency):
